@@ -9,13 +9,18 @@ import (
 func TestModule(t *testing.T) {
 	t.Parallel()
 
+	workspaceName := "testing-test"
+
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "./unit-test",
 	})
 
+	terraform.Init(t, terraformOptions)
+	terraform.WorkspaceSelectOrNew(t, terraformOptions, workspaceName)
+
 	defer terraform.Destroy(t, terraformOptions)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.Apply(t, terraformOptions)
 
 	// exampleName := terraform.Output(t, terraformOptions, "example_name")
 
