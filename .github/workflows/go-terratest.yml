@@ -1,3 +1,4 @@
+name: Terratest
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
@@ -65,5 +66,5 @@ jobs:
         working-directory: test
         run: |
           chmod 700 ../scripts/redact-output.sh
-          go test -v | ../scripts/redact-output.sh
+          go test -v -timeout 60m | ../scripts/redact-output.sh
           exit ${PIPESTATUS[0]}
