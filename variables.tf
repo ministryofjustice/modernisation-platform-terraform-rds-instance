@@ -19,10 +19,16 @@ variable "vpc_id" {
 
 variable "subnet_tags" {
   type        = map(string)
-  description = "Subnet tags used to discover existing subnets for the DB subnet group in the target VPC"
+  description = "Subnet tags used to discover existing subnets for the DB subnet group in the target VPC. Ignored if subnet_ids is set."
   default = {
-    Type = "private"
+    Type = "data"
   }
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "List of explicit subnet IDs for the DB subnet group. When set, overrides subnet discovery via tags."
+  default     = null
 }
 
 variable "allowed_security_groups" {
@@ -83,6 +89,22 @@ variable "db_storage_type" {
   type        = string
   description = "Storage type (gp2, gp3, io1, io2)"
   default     = "gp3"
+
+  validation {
+    condition     = contains(["gp2", "gp3", "io1", "io2"], var.db_storage_type)
+    error_message = "db_storage_type must be one of: gp2, gp3, io1, io2."
+  }
+}
+
+variable "db_iops" {
+  type        = number
+  description = "Provisioned IOPS for the storage. Required for io1 and io2 storage types. Minimum 1000."
+  default     = null
+
+  validation {
+    condition     = var.db_iops == null || var.db_iops >= 1000
+    error_message = "db_iops must be at least 1000 when specified."
+  }
 }
 
 ###############################################################
@@ -91,12 +113,14 @@ variable "db_storage_type" {
 
 variable "db_name" {
   type        = string
-  description = "Name of the initial database to create"
+  description = "Name of the initial database to create. When restoring from a snapshot or creating a replica, this is inherited from the source and can be left null."
+  default     = null
 }
 
 variable "db_username" {
   type        = string
-  description = "Master username for the database"
+  description = "Master username for the database. Required for new instances and snapshot restores. Inherited from the source instance when replicate_source_db is set."
+  default     = null
 }
 
 ###############################################################
@@ -116,7 +140,7 @@ variable "kms_key_id" {
 variable "multi_az" {
   type        = bool
   description = "Whether to deploy the RDS instance across multiple Availability Zones"
-  default     = false
+  default     = true
 }
 
 variable "deletion_protection" {
@@ -129,6 +153,22 @@ variable "skip_final_snapshot" {
   type        = bool
   description = "Whether to skip taking a final snapshot before destroying the instance"
   default     = false
+}
+
+###############################################################
+# Snapshot & replication
+###############################################################
+
+variable "snapshot_identifier" {
+  type        = string
+  description = "Snapshot identifier to restore the instance from. When set, the instance is created from this snapshot instead of a blank database. db_username must match the snapshot's master username."
+  default     = null
+}
+
+variable "replicate_source_db" {
+  type        = string
+  description = "Identifier or ARN of the source RDS instance to create a read replica from. When set, db_username, db_name, and the master password are inherited from the source — Secrets Manager is not provisioned for the replica."
+  default     = null
 }
 
 variable "backup_retention_period" {
@@ -179,14 +219,13 @@ variable "performance_insights_retention_period" {
 
 variable "monitoring_interval" {
   type        = number
-  description = "Interval in seconds for Enhanced Monitoring metrics. 0 disables Enhanced Monitoring."
-  default     = 0
+  description = "Interval in seconds for Enhanced Monitoring metrics. Must be 1, 5, 10, 15, 30, or 60. Defaults to 60 (enabled)."
+  default     = 60
 }
 
 variable "monitoring_role_arn" {
   type        = string
-  description = "ARN of the IAM role that allows RDS to send Enhanced Monitoring metrics to CloudWatch. Required when monitoring_interval > 0."
-  default     = null
+  description = "ARN of the IAM role that allows RDS to send Enhanced Monitoring metrics to CloudWatch. Required for monitoring."
 }
 
 ###############################################################
@@ -215,5 +254,33 @@ variable "ca_cert_identifier" {
   type        = string
   description = "Identifier of the CA certificate for the DB instance. Defaults to rds-ca-rsa4096-g1 (RSA 4096-bit, 100-year validity). Override to rds-ca-ecc384-g1 for ECC or rds-ca-rsa2048-g1 for broader client compatibility."
   default     = "rds-ca-rsa4096-g1"
+}
+
+###############################################################
+# Logging & XSIAM
+###############################################################
+
+variable "cloudwatch_log_retention_days" {
+  type        = number
+  description = "Number of days to retain RDS logs in CloudWatch log groups."
+  default     = 30
+}
+
+variable "opt_in_xsiam_logging" {
+  type        = bool
+  description = "If true, forwards RDS CloudWatch logs to XSIAM Cortex via Kinesis Firehose. Requires xsiam_firehose_stream_name and xsiam_cloudwatch_role_arn."
+  default     = false
+}
+
+variable "xsiam_firehose_stream_name" {
+  type        = string
+  description = "Name of the Kinesis Firehose delivery stream to send logs to. Required when opt_in_xsiam_logging = true."
+  default     = null
+}
+
+variable "xsiam_cloudwatch_role_arn" {
+  type        = string
+  description = "ARN of the IAM role that allows CloudWatch Logs to write to the Firehose stream. Required when opt_in_xsiam_logging = true."
+  default     = null
 }
 
