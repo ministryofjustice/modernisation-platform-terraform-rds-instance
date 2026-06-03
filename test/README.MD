@@ -27,8 +27,10 @@ Next go into the testing folder and run the tests.
 ```
 cd test
 go mod download
-go test -v
+go test -v -timeout 60m
 ```
+
+`go test` defaults to a 10 minute timeout, so long-running Terratest runs should always set `-timeout` explicitly.
 
 Upon successful run, you should see an output similar to the below
 
