@@ -102,7 +102,7 @@ variable "db_iops" {
   default     = null
 
   validation {
-    condition     = var.db_iops == null || var.db_iops >= 1000
+    condition     = var.db_iops == null || try(var.db_iops >= 1000, false)
     error_message = "db_iops must be at least 1000 when specified."
   }
 }
