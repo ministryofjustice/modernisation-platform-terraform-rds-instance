@@ -58,6 +58,7 @@ module "module_test" {
 
   db_instance_class         = "db.t3.small"
   db_allocated_storage      = 20
+  db_storage_type           = "gp3"
   db_parameter_group_family = "postgres16"
   deletion_protection       = false
   skip_final_snapshot       = true
