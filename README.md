@@ -10,7 +10,7 @@ This repository is for Moderisation Platform usage only. If you have a suggestio
 
 module "template" {
 
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-module-template"
+  source = "git::https://github.com/ministryofjustice/modernisation-platform-terraform-rds-instance.git?ref=v0.5.0"
 
   tags             = local.tags
   application_name = local.application_name
