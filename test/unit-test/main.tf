@@ -18,9 +18,17 @@ data "aws_subnets" "shared_private" {
   }
 }
 
+resource "random_string" "name_suffix" {
+  length  = 8
+  lower   = true
+  upper   = false
+  numeric = true
+  special = false
+}
+
 # Create IAM role for RDS monitoring
 resource "aws_iam_role" "rds_monitoring" {
-  name = "testing-rds-monitoring-role"
+  name = "testing-rds-monitoring-${random_string.name_suffix.result}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -45,7 +53,7 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 
 module "module_test" {
   source           = "../../"
-  application_name = local.application_name
+  application_name = "${local.application_name}-${random_string.name_suffix.result}"
   tags             = local.tags
 
   vpc_id     = data.aws_vpcs.shared.ids[0]
