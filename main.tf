@@ -253,6 +253,8 @@ resource "aws_db_instance" "rds" {
     { "Name" = "${var.application_name}-rds" }
   )
 
+  depends_on = [aws_cloudwatch_log_group.rds]
+
   lifecycle {
     ignore_changes = [password, engine_version]
 
