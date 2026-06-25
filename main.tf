@@ -282,16 +282,22 @@ resource "aws_db_instance" "rds" {
 # CloudWatch log groups
 ###############################################################
 
+# Random Log Suffix to ensure file name clashes don't occur
+resource "random_string" "log_suffix" {
+  length  = 8
+  special = false
+}
+
 resource "aws_cloudwatch_log_group" "rds" {
   for_each = toset(local.log_exports)
 
-  name              = "/aws/rds/instance/${var.application_name}-rds/${each.value}"
+  name              = "/aws/rds/instance/${var.application_name}-rds/${each.value}-${random_string.log_suffix.result}"
   retention_in_days = var.cloudwatch_log_retention_days
   kms_key_id        = var.kms_key_id
 
   tags = merge(
     var.tags,
-    { "Name" = "/aws/rds/instance/${var.application_name}-rds/${each.value}" }
+    { "Name" = "/aws/rds/instance/${var.application_name}-rds/${each.value}-${random_string.log_suffix.result}" }
   )
 }
 
