@@ -62,7 +62,18 @@ jobs:
       - name: Download Go Modules
         working-directory: test
         run: go mod download
+
+      - name: Detect Terraform Changes
+        id: tf-changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -E '\.(tf|tfvars|tfvars\.json)$' > /dev/null; then
+            echo "has_terraform_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_terraform_changes=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Go Tests
+        if: steps.tf-changes.outputs.has_terraform_changes == 'true'
         working-directory: test
         run: |
           chmod 700 ../scripts/redact-output.sh
