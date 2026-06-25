@@ -1,19 +1,34 @@
-# Modernisation Platform Terraform Module Template
+# Modernisation Platform Terraform RDS Instance
 
 [![Standards Icon]][Standards Link] [![Format Code Icon]][Format Code Link] [![Scorecards Icon]][Scorecards Link] [![SCA Icon]][SCA Link] [![Terraform SCA Icon]][Terraform SCA Link]
 
-This repository is for Moderisation Platform usage only. If you have a suggestion for a new module that would benefit mutiple teams in the Modernisation Platform, please raise an issue with the team [here.](https://github.com/ministryofjustice/modernisation-platform/issues/new?template=new-story-template.yml)
+Terraform module for provisioning an AWS RDS instance on the Modernisation Platform.
+
+This repository is for Modernisation Platform usage only. If you have a suggestion for a change that would benefit multiple teams, please raise an issue with the team [here](https://github.com/ministryofjustice/modernisation-platform/issues/new?template=new-story-template.yml).
 
 ## Usage
 
 ```hcl
 
-module "template" {
+module "rds" {
 
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-module-template"
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-rds-instance?ref=2d8e3b21b8f9a0b8acb81597a2d4575068edfede" # v0.6.0
 
   tags             = local.tags
   application_name = local.application_name
+
+  vpc_id     = data.aws_vpc.shared.id
+  subnet_ids = data.aws_subnets.shared_private.ids
+
+  allowed_security_groups = [aws_security_group.application.id]
+
+  db_engine                 = "postgres"
+  db_engine_version         = "16"
+  db_parameter_group_family = "postgres16"
+  db_name                   = "app"
+  db_username               = "app_admin"
+
+  monitoring_role_arn = aws_iam_role.rds_monitoring.arn
 
 }
 
@@ -117,13 +132,13 @@ No modules.
 No outputs.
 <!-- END_TF_DOCS -->
 
-[Standards Link]: https://github-community.service.justice.gov.uk/repository-standards/modernisation-platform-terraform-module-template "Repo standards badge."
-[Standards Icon]: https://github-community.service.justice.gov.uk/repository-standards/api/modernisation-platform-terraform-module-template/badge
-[Format Code Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-module-template/format-code.yml?labelColor=231f20&style=for-the-badge&label=Formate%20Code
-[Format Code Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-module-template/actions/workflows/format-code.yml
-[Scorecards Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-module-template/scorecards.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Scorecards
-[Scorecards Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-module-template/actions/workflows/scorecards.yml
-[SCA Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-module-template/code-scanning.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Secure%20Code%20Analysis
-[SCA Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-module-template/actions/workflows/code-scanning.yml
-[Terraform SCA Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-module-template/code-scanning.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Terraform%20Static%20Code%20Analysis
-[Terraform SCA Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-module-template/actions/workflows/terraform-static-analysis.yml
+[Standards Link]: https://github-community.service.justice.gov.uk/repository-standards/modernisation-platform-terraform-rds-instance "Repo standards badge."
+[Standards Icon]: https://github-community.service.justice.gov.uk/repository-standards/api/modernisation-platform-terraform-rds-instance/badge
+[Format Code Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-rds-instance/format-code.yml?labelColor=231f20&style=for-the-badge&label=Formate%20Code
+[Format Code Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-rds-instance/actions/workflows/format-code.yml
+[Scorecards Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-rds-instance/scorecards.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Scorecards
+[Scorecards Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-rds-instance/actions/workflows/scorecards.yml
+[SCA Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-rds-instance/code-scanning.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Secure%20Code%20Analysis
+[SCA Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-rds-instance/actions/workflows/code-scanning.yml
+[Terraform SCA Icon]: https://img.shields.io/github/actions/workflow/status/ministryofjustice/modernisation-platform-terraform-rds-instance/code-scanning.yml?branch=main&labelColor=231f20&style=for-the-badge&label=Terraform%20Static%20Code%20Analysis
+[Terraform SCA Link]: https://github.com/ministryofjustice/modernisation-platform-terraform-rds-instance/actions/workflows/terraform-static-analysis.yml
