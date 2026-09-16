@@ -27,7 +27,7 @@ jobs:
         git-push: "false"
 
     - name: Fix Git permissions
-      run: sudo chown -R $(whoami) .git/
+      run: sudo chown -R "$(whoami)" .git/
 
     - name: Run Signed Commit Action
       uses: ministryofjustice/modernisation-platform-github-actions/signed-commit@e49ac27b104b38bac12fc1e3257a13be6289a59c # v6.2.2
