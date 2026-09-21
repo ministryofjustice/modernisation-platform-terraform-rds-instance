@@ -1,5 +1,6 @@
+---
 name: Terratest
-on:
+"on":
   pull_request:
     types: [opened, edited, reopened, synchronize]
 
