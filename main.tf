@@ -131,6 +131,12 @@ data "aws_subnets" "rds" {
   tags = var.subnet_tags
 }
 
+data "aws_route_table" "rds" {
+  for_each = toset(local.effective_subnet_ids)
+
+  subnet_id = each.value
+}
+
 resource "aws_db_subnet_group" "rds" {
   name       = "${var.application_name}-rds"
   subnet_ids = local.effective_subnet_ids
@@ -139,6 +145,20 @@ resource "aws_db_subnet_group" "rds" {
     var.tags,
     { "Name" = "${var.application_name}-rds" }
   )
+
+  lifecycle {
+    precondition {
+      condition = alltrue([
+        for rt in values(data.aws_route_table.rds) :
+        length([
+          for route in rt.routes :
+          route.gateway_id
+          if route.gateway_id != null && startswith(route.gateway_id, "igw-")
+        ]) == 0
+      ])
+      error_message = "All supplied subnets must be private and must not have a route to an Internet Gateway."
+    }
+  }
 }
 
 ###############################################################
