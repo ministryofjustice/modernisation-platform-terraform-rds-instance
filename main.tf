@@ -151,7 +151,7 @@ resource "aws_db_subnet_group" "rds" {
       condition = alltrue([
         for rt in values(data.aws_route_table.rds) :
         length([
-          for route in rt.routes : 
+          for route in rt.routes :
           route.gateway_id
           if route.gateway_id != null && startswith(route.gateway_id, "igw-")
         ]) == 0
