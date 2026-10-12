@@ -50,7 +50,7 @@ locals {
 ###############################################################
 
 # Created only when the caller provides a family and has not supplied their own
-# parameter group name. Enforces encrypted connections at the database level.ter
+# parameter group name. Enforces encrypted connections at the database level.
 resource "aws_db_parameter_group" "rds" {
   count = var.parameter_group_name == null && var.db_parameter_group_family != null ? 1 : 0
 
